@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KrishiAI – Smart Agriculture System & AI Agronomy</title>
+  <meta name="description" content="Production-grade AI & IoT precision agriculture system: ML crop recommendations, foliar disease scanning, smart irrigation, and mandi economics.">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Chart.js CDN with graceful offline canvas fallback -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Top Sticky Navbar -->
+  <header class="app-navbar">
+    <div class="nav-container">
+      <div class="brand-wrapper" onclick="switchTab('dashboard')">
+        <div class="brand-icon">🌱</div>
+        <div>
+          <div class="brand-title">Krishi<span>AI</span> <span class="brand-badge">PROTOTYPE</span></div>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <div class="status-pill">
+          <span class="status-pulse"></span>
+          <span data-i18n="live_status">IoT Active</span>
+        </div>
+
+        <select id="langSelect" class="lang-select" aria-label="Language Selector">
+          <option value="en">English (EN)</option>
+          <option value="hi">हिंदी (HI)</option>
+          <option value="mr">मराठी (MR)</option>
+        </select>
+
+        <button id="themeToggleBtn" class="icon-btn" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
+          🌓
+        </button>
+
+        <button id="btnStartDemo" class="btn-primary btn-demo-start">
+          ▶ <span data-i18n="start_demo">Start Demo</span>
+        </button>
+
+        <a href="/api/report/pdf" download="KrishiAI_Farm_Report.pdf" class="btn-primary" title="Download submission-ready PDF report">
+          📄 <span data-i18n="download_pdf">Export PDF</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Secondary Tab Bar -->
+  <nav class="tabs-nav-bar">
+    <ul class="tabs-list">
+      <li><button class="nav-tab-btn active" data-tab="dashboard">📊 <span data-i18n="dashboard">Dashboard</span></button></li>
+      <li><button class="nav-tab-btn" data-tab="crops">🌱 <span data-i18n="crop_rec">Crop Rec (ML)</span></button></li>
+      <li><button class="nav-tab-btn" data-tab="disease">🔬 <span data-i18n="disease_detect">Disease Detection</span></button></li>
+      <li><button class="nav-tab-btn" data-tab="irrigation">💧 <span data-i18n="irrigation">Smart Irrigation</span></button></li>
+      <li><button class="nav-tab-btn" data-tab="weather">🌦️ <span data-i18n="weather">Weather Advisory</span></button></li>
+      <li><button class="nav-tab-btn" data-tab="yield">📈 <span data-i18n="yield_profit">Yield & Profit</span></button></li>
+      <li><button class="nav-tab-btn" data-tab="fertilizer">🧪 <span data-i18n="fertilizer">Fertilizer Calc</span></button></li>
+      <li><button class="nav-tab-btn" data-tab="calendar">📅 <span data-i18n="calendar">Crop Calendar</span></button></li>
+      <li><button class="nav-tab-btn" data-tab="sustainability">🌍 <span data-i18n="sustainability">Eco Footprint</span></button></li>
+      <li><button class="nav-tab-btn" data-tab="chat">💬 <span data-i18n="chatbot_title">Krishi Sakha AI</span></button></li>
+    </ul>
+  </nav>
+
+  <!-- Main View Container -->
+  <main class="main-content">
+
+    <!-- 1. DASHBOARD TAB -->
+    <section id="tab-dashboard" class="tab-pane active">
+      <div id="farmAlertBanner" class="alert-banner alert-success">
+        Optimal soil moisture & microclimate. All telemetry within ideal agro-climatic boundaries.
+      </div>
+
+      <!-- Telemetry Cards -->
+      <div class="telemetry-grid">
+        <div class="telemetry-card health-score-card">
+          <div class="telemetry-card-hdr">
+            <span class="telemetry-label" data-i18n="farm_health">Farm Health Score</span>
+            <span class="telemetry-icon">🛡️</span>
+          </div>
+          <div class="telemetry-value"><span id="valHealthScore">92</span><span style="font-size: 1.1rem; color: var(--text-light)"> / 100</span></div>
+          <div class="gauge-bar-bg">
+            <div id="healthScoreFill" class="gauge-bar-fill" style="width: 92%"></div>
+          </div>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="telemetry-card-hdr">
+            <span class="telemetry-label" data-i18n="soil_moisture">Soil Moisture</span>
+            <span class="telemetry-icon">💧</span>
+          </div>
+          <div class="telemetry-value" id="valMoisture">45.2%</div>
+          <div class="telemetry-meta">Target: 40% - 55%</div>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="telemetry-card-hdr">
+            <span class="telemetry-label" data-i18n="temperature">Root Zone Temp</span>
+            <span class="telemetry-icon">🌡️</span>
+          </div>
+          <div class="telemetry-value" id="valTemp">28.4 °C</div>
+          <div class="telemetry-meta">Diurnal Sine Cycle</div>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="telemetry-card-hdr">
+            <span class="telemetry-label" data-i18n="humidity">Air Humidity</span>
+            <span class="telemetry-icon">💨</span>
+          </div>
+          <div class="telemetry-value" id="valHumidity">64.0%</div>
+          <div class="telemetry-meta">Normal Vapor Pressure</div>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="telemetry-card-hdr">
+            <span class="telemetry-label" data-i18n="soil_ph">Soil pH</span>
+            <span class="telemetry-icon">🧪</span>
+          </div>
+          <div class="telemetry-value" id="valPh">6.65</div>
+          <div class="telemetry-meta">Slightly Acidic (Ideal)</div>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="telemetry-card-hdr">
+            <span class="telemetry-label" data-i18n="npk_nutrients">NPK Nutrients</span>
+            <span class="telemetry-icon">🌾</span>
+          </div>
+          <div class="telemetry-value" id="valNpk">74 : 48 : 52</div>
+          <div class="telemetry-meta">kg/ha Available Ratio</div>
+        </div>
+      </div>
+
+      <!-- Simulator Interactive Controls -->
+      <div class="sim-control-panel">
+        <div class="sim-header">
+          <h3 data-i18n="sim_controls">🎮 Demo Environmental Simulators</h3>
+          <span style="font-size: 0.8rem; color: var(--text-light)">Interactive event injection for live presentations</span>
+        </div>
+        <div class="sim-buttons-group">
+          <button class="btn-sim-action" data-sim-event="normal">✅ <span data-i18n="sim_normal">Normal Cycle</span></button>
+          <button class="btn-sim-action" data-sim-event="drought">☀️ <span data-i18n="sim_drought">Simulate Drought</span></button>
+          <button class="btn-sim-action" data-sim-event="heavy_rain">🌧️ <span data-i18n="sim_rain">Simulate Heavy Rain</span></button>
+          <button class="btn-sim-action" data-sim-event="pest_attack">🐛 <span data-i18n="sim_pest">Simulate Pest Attack</span></button>
+          <button class="btn-sim-action" data-sim-event="irrigate">💧 <span data-i18n="sim_irrigate">Trigger Micro-Drip</span></button>
+        </div>
+      </div>
+
+      <!-- Real-Time Charts -->
+      <div class="charts-row-grid">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Live Telemetry Stream (Moisture vs Temp vs Humidity)</h3>
+            <span class="status-pill"><span class="status-pulse"></span> Streaming</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="telemetryChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Soil Nutrient N-P-K Balance</h3>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="npkChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. CROP RECOMMENDATION TAB -->
+    <section id="tab-crops" class="tab-pane">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="crop_rec_title">Machine Learning Crop Recommendation</h2>
+        <p class="section-subtitle" data-i18n="crop_rec_desc">Trained on regional agro-climatic datasets across 24 crops including Maharashtra cash crops.</p>
+      </div>
+
+      <div class="form-grid-layout">
+        <div class="app-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 700;">Soil & Climate Parameters</h3>
+            <button id="btnQuickFillSensors" type="button" class="btn-secondary">
+              ⚡ <span data-i18n="quick_fill_sensors">Auto-fill with Live Sensors</span>
+            </button>
+          </div>
+
+          <form id="cropRecForm">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="recN">Nitrogen (N) kg/ha</label>
+                <input type="number" id="recN" class="form-input" value="75" min="0" max="300" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="recP">Phosphorus (P) kg/ha</label>
+                <input type="number" id="recP" class="form-input" value="48" min="0" max="200" required>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="recK">Potassium (K) kg/ha</label>
+                <input type="number" id="recK" class="form-input" value="52" min="0" max="300" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="recPh">Soil pH (4.0 - 9.0)</label>
+                <input type="number" id="recPh" class="form-input" step="0.1" value="6.6" min="3" max="10" required>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="recTemp">Temperature (°C)</label>
+                <input type="number" id="recTemp" class="form-input" step="0.1" value="28.5" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="recHumidity">Humidity (%)</label>
+                <input type="number" id="recHumidity" class="form-input" step="0.1" value="65.0" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="recRainfall">Rainfall (mm / season)</label>
+              <input type="number" id="recRainfall" class="form-input" value="120" required>
+            </div>
+
+            <button type="submit" class="btn-primary btn-block">
+              🎯 <span data-i18n="btn_predict_crop">Predict Optimal Crops</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="app-card">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;" data-i18n="rec_results_title">Predicted Top Crops (Random Forest)</h3>
+          <div id="cropRecResults">
+            <p class="empty-state" style="color: var(--text-light); text-align: center; padding: 3rem 0;">
+              Click "Auto-fill with Live Sensors" and submit to generate top crop matches with confidence percentages.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PLANT DISEASE DETECTION TAB -->
+    <section id="tab-disease" class="tab-pane">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="disease_title">Foliar Plant Disease Diagnosis</h2>
+        <p class="section-subtitle" data-i18n="disease_desc">Upload or capture a leaf photo to analyze chlorophyll distribution and necrotic lesion ratios.</p>
+      </div>
+
+      <div class="form-grid-layout">
+        <div class="app-card">
+          <div id="leafDropZone" class="dropzone-container">
+            <div class="dropzone-icon">🍃</div>
+            <h4 style="font-size: 1rem; font-weight: 700;" data-i18n="drop_leaf_here">Drag & drop leaf photo here, or click to browse</h4>
+            <p style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.3rem;">Supports JPG, PNG, WebP up to 10MB</p>
+            <input type="file" id="leafFileInput" accept="image/*" style="display: none">
+            <img id="leafPreviewImg" class="leaf-preview-img" alt="Leaf Preview">
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <span style="font-size: 0.85rem; font-weight: 700;" data-i18n="test_sample_leaf">Quick Test with Sample Leaves:</span>
+            <div class="sample-leaf-chips">
+              <button class="btn-sample-leaf" data-disease-type="Leaf Blight">🍂 <span data-i18n="sample_blight">Leaf Blight</span></button>
+              <button class="btn-sample-leaf" data-disease-type="Rust">🔴 <span data-i18n="sample_rust">Foliar Rust</span></button>
+              <button class="btn-sample-leaf" data-disease-type="Powdery Mildew">⚪ <span data-i18n="sample_mildew">Powdery Mildew</span></button>
+              <button class="btn-sample-leaf" data-disease-type="Healthy">🌿 <span data-i18n="sample_healthy">Healthy Leaf</span></button>
+              <button class="btn-sample-leaf" data-disease-type="Nutrient Deficiency">🟡 <span data-i18n="sample_deficiency">Chlorosis</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-card">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Pathology Findings & Treatment</h3>
+          <div id="diseaseDiagnosisResult">
+            <p class="empty-state" style="color: var(--text-light); text-align: center; padding: 3rem 0;">
+              Upload an image or click a sample leaf button on the left to inspect severity index, symptoms, and organic remedies.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. SMART IRRIGATION PLANNER TAB -->
+    <section id="tab-irrigation" class="tab-pane">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="irrig_title">Precision Smart Irrigation Planner</h2>
+        <p class="section-subtitle" data-i18n="irrig_desc">AI water budgeting incorporating root-zone soil moisture, weather forecast, and crop stage.</p>
+      </div>
+
+      <div class="form-grid-layout">
+        <div class="app-card">
+          <form id="irrigationForm">
+            <div class="form-group">
+              <label class="form-label" for="irrigCrop">Cultivated Crop</label>
+              <select id="irrigCrop" class="form-select">
+                <option value="Sugarcane">Sugarcane (ऊस)</option>
+                <option value="Cotton">Cotton (कापूस)</option>
+                <option value="Soybean">Soybean (सोयाबीन)</option>
+                <option value="Onion">Onion (कांदा)</option>
+                <option value="Grapes">Grapes (द्राक्षे)</option>
+                <option value="Pomegranate">Pomegranate (डाळिंब)</option>
+                <option value="Wheat">Wheat (गहू)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="irrigMoisture">Current Soil Moisture (%)</label>
+              <input type="number" id="irrigMoisture" class="form-input" step="0.1" value="38.5" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="irrigArea">Farm Land Area (Acres)</label>
+              <input type="number" id="irrigArea" class="form-input" step="0.1" value="3.5" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="irrigRainForecast">Next 24h Rain Forecast (mm)</label>
+              <input type="number" id="irrigRainForecast" class="form-input" step="0.1" value="0.0">
+            </div>
+
+            <button type="submit" id="btnCalcIrrigation" class="btn-primary btn-block">
+              💧 <span data-i18n="btn_calc_irrigation">Calculate Water Quota</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="app-card">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Irrigation Action Plan</h3>
+          <div id="irrigationResults">
+            <p class="empty-state" style="color: var(--text-light); text-align: center; padding: 3rem 0;">
+              Adjust parameters and click calculate to view required Litres, drip runtime minutes, and water conserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. WEATHER ADVISORY TAB -->
+    <section id="tab-weather" class="tab-pane">
+      <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 class="section-title" data-i18n="weather_title">7-Day Agro-Meteorological Forecast</h2>
+          <p class="section-subtitle" data-i18n="weather_desc">Open-Meteo precision forecast for agricultural spray windows and frost/heat warnings.</p>
+        </div>
+        <button id="btnDetectLocation" class="btn-secondary">
+          📍 <span data-i18n="detect_location">Detect My Location</span>
+        </button>
+      </div>
+
+      <div id="weatherForecastCards" class="weather-forecast-grid"></div>
+
+      <div class="app-card" style="margin-top: 1.5rem;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">🌾 Intelligent Farm Advisories & Spray Windows</h3>
+        <div id="weatherAdvisoriesBox" class="weather-advisories-grid"></div>
+      </div>
+    </section>
+
+    <!-- 6. YIELD & MANDI PROFIT TAB -->
+    <section id="tab-yield" class="tab-pane">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="yield_title">Yield & APMC Mandi Profit Predictor</h2>
+        <p class="section-subtitle" data-i18n="yield_desc">Estimate production tonnage, input expenses, and market revenue based on regional mandi prices.</p>
+      </div>
+
+      <div class="form-grid-layout">
+        <div class="app-card">
+          <form id="yieldForm">
+            <div class="form-group">
+              <label class="form-label" for="yieldCrop">Target Crop</label>
+              <select id="yieldCrop" class="form-select">
+                <option value="sugarcane">Sugarcane (ऊस)</option>
+                <option value="cotton">Cotton (कापूस)</option>
+                <option value="soybean">Soybean (सोयाबीन)</option>
+                <option value="onion">Onion (कांदा)</option>
+                <option value="grapes">Grapes (द्राक्षे)</option>
+                <option value="pomegranate">Pomegranate (डाळिंब)</option>
+                <option value="wheat">Wheat (गहू)</option>
+                <option value="rice">Rice (भात)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="yieldArea">Land Area (Acres)</label>
+              <input type="number" id="yieldArea" class="form-input" step="0.5" value="3.5" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="yieldSeason">Farming Season</label>
+              <select id="yieldSeason" class="form-select">
+                <option value="Kharif">Kharif (Monsoon)</option>
+                <option value="Rabi">Rabi (Winter)</option>
+                <option value="Zaid">Zaid (Summer)</option>
+                <option value="Annual">Annual Cycle</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="yieldSoil">Soil Profile</label>
+              <select id="yieldSoil" class="form-select">
+                <option value="Medium Black Soil">Medium Black Soil (मध्यम काळी जमीन)</option>
+                <option value="Deep Black Cotton Soil">Deep Black Cotton Soil (भारी काळी)</option>
+                <option value="Loamy Soil">Loamy Alluvial Soil (गाळाची जमीन)</option>
+                <option value="Sandy Loam">Sandy Loam (हलकी वाळुसर)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="yieldIrrigation">Irrigation Technology</label>
+              <select id="yieldIrrigation" class="form-select">
+                <option value="Drip Irrigation">Precision Drip (+18% Yield, Low Water)</option>
+                <option value="Sprinkler">Micro-Sprinkler</option>
+                <option value="Flood / Furrow">Traditional Flood / Furrow</option>
+                <option value="Rainfed / Dryland">Rainfed / Dryland</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn-primary btn-block">
+              📊 <span data-i18n="btn_predict_yield">Calculate Projected Returns</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="app-card">
+          <div id="yieldResultsBox">
+            <p class="empty-state" style="color: var(--text-light); text-align: center; padding: 2rem 0;">
+              Submit the form to compute yield projection, APMC mandi revenue, and net profit margins.
+            </p>
+          </div>
+          <div class="chart-wrapper" style="margin-top: 1.5rem; height: 230px;">
+            <canvas id="yieldEconomicsChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. FERTILIZER CALCULATOR TAB -->
+    <section id="tab-fertilizer" class="tab-pane">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="fert_title">Precision Soil Fertilizer Calculator</h2>
+        <p class="section-subtitle" data-i18n="fert_desc">Calculates exact commercial fertilizer bags (Urea, DAP, MOP) to avoid excess chemical runoff.</p>
+      </div>
+
+      <div class="form-grid-layout">
+        <div class="app-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 700;">Soil Test Deficit Analysis</h3>
+            <button id="btnFertQuickFill" type="button" class="btn-secondary">
+              ⚡ <span>Import Live Soil Test</span>
+            </button>
+          </div>
+
+          <form id="fertilizerForm">
+            <div class="form-group">
+              <label class="form-label" for="fertCrop">Crop to Fertilize</label>
+              <select id="fertCrop" class="form-select">
+                <option value="sugarcane">Sugarcane (ऊस)</option>
+                <option value="cotton">Cotton (कापूस)</option>
+                <option value="soybean">Soybean (सोयाबीन)</option>
+                <option value="onion">Onion (कांदा)</option>
+                <option value="grapes">Grapes (द्राक्षे)</option>
+                <option value="wheat">Wheat (गहू)</option>
+              </select>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="fertN">Soil N (kg/acre)</label>
+                <input type="number" id="fertN" class="form-input" value="30" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="fertP">Soil P (kg/acre)</label>
+                <input type="number" id="fertP" class="form-input" value="18" required>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="fertK">Soil K (kg/acre)</label>
+                <input type="number" id="fertK" class="form-input" value="22" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="fertArea">Acreage</label>
+                <input type="number" id="fertArea" class="form-input" step="0.5" value="2.0" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary btn-block">
+              🧪 <span data-i18n="btn_calc_fert">Calculate Exact Dosage</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="app-card">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Nutrient Dosage & Schedule</h3>
+          <div id="fertilizerResultsBox">
+            <p class="empty-state" style="color: var(--text-light); text-align: center; padding: 3rem 0;">
+              Click calculate to view exact 45kg/50kg commercial bags and regenerative biofertilizer protocols.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. CROP CALENDAR TAB -->
+    <section id="tab-calendar" class="tab-pane">
+      <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 class="section-title" data-i18n="cal_title">Stage-Wise Crop Calendar</h2>
+          <p class="section-subtitle" data-i18n="cal_desc">Automated growth timeline with fertigation milestones and critical pest scouting alerts.</p>
+        </div>
+        <div>
+          <select id="calendarCropSelect" class="form-select" style="min-width: 180px;">
+            <option value="Sugarcane">Sugarcane (ऊस)</option>
+            <option value="Cotton">Cotton (कापूस)</option>
+            <option value="Soybean">Soybean (सोयाबीन)</option>
+            <option value="Onion">Onion (कांदा)</option>
+            <option value="Wheat">Wheat (गहू)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <div id="calendarActiveStage"></div>
+        <div id="calendarTimelineBox" class="cal-timeline-box" style="margin-top: 1.5rem;"></div>
+      </div>
+    </section>
+
+    <!-- 9. SUSTAINABILITY FOOTPRINT TAB -->
+    <section id="tab-sustainability" class="tab-pane">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="sust_title">Carbon & Water Ecological Footprint</h2>
+        <p class="section-subtitle" data-i18n="sust_desc">Quantifies groundwater preserved and greenhouse gases avoided through smart AI interventions.</p>
+      </div>
+
+      <div id="sustainabilityBox"></div>
+    </section>
+
+    <!-- 10. KRISHI SAKHA AI CHATBOT TAB -->
+    <section id="tab-chat" class="tab-pane">
+      <div class="section-header">
+        <h2 class="section-title">Krishi Sakha AI – Autonomous Farm Companion</h2>
+        <p class="section-subtitle">Multi-lingual intelligent assistant with direct access to live sensor telemetry, pest management, and mandi knowledge.</p>
+      </div>
+
+      <div class="chat-container">
+        <div id="chatMessages" class="chat-messages">
+          <div class="chat-msg chat-msg-bot">
+            <div class="bot-avatar">🌱</div>
+            <div class="msg-content">
+              <div class="msg-sender-name">Krishi Sakha AI</div>
+              <div class="msg-bubble">
+                Hello! I am <strong>Krishi Sakha</strong>, your AI Farm Assistant.<br/>
+                I am connected directly to your farm's real-time IoT sensors. You can ask me questions in <strong>English, हिंदी, or मराठी</strong>!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-controls-area">
+          <div id="chatSuggestions" class="chat-suggestions">
+            <button type="button" class="chip">What is my current soil moisture?</button>
+            <button type="button" class="chip">How much water do I need to irrigate?</button>
+            <button type="button" class="chip">Suggest fertilizers for sugarcane</button>
+            <button type="button" class="chip">How to cure leaf blight disease?</button>
+          </div>
+
+          <div class="chat-input-bar">
+            <input type="text" id="chatInput" placeholder="Ask about crops, soil, pests, irrigation in English, हिंदी, or मराठी..." data-i18n-placeholder="chat_placeholder">
+            <button type="button" id="btnVoiceChat" class="btn-icon-voice" title="Voice Input (Click to speak)">
+              🎙️
+            </button>
+            <button type="button" id="btnSendChat" class="btn-icon-send" title="Send Question">
+              ➤
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Demo Walkthrough Overlay Modal -->
+  <div id="demoWalkthroughModal" class="demo-modal-overlay">
+    <div class="demo-modal-header">
+      <h4>🎯 College Presentation Walkthrough</h4>
+      <span id="demoStepCounter" class="demo-modal-counter">Step 1 of 9</span>
+    </div>
+    <div class="demo-modal-body">
+      <h3 id="demoStepTitle" class="demo-step-title">1. Live IoT Farm Dashboard</h3>
+      <p id="demoStepNarrative" class="demo-step-narrative">Welcome to KrishiAI! Real-time telemetry monitoring soil moisture, temperature, and nutrients.</p>
+      <div class="demo-modal-actions">
+        <button id="btnDemoExit" class="btn-secondary">Exit Demo</button>
+        <button id="btnDemoNext" class="btn-primary">Next Step ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Application Scripts -->
+  <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/chatbot.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
